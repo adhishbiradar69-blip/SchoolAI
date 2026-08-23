@@ -5,3 +5,4 @@ from .student import Student
 from .attendance import Attendance
 from .task import Task, TaskCompletion
 from .mark import Mark
+from .subject import Subject

@@ -1,7 +1,7 @@
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from app.database import engine, Base
-from app.models import user, school, class_, student, attendance, task, mark
+from app.models import user, school, class_, student, attendance, task, mark, subject
 from app.routers import auth, admin, attendance, tasks, academics
 
 app = FastAPI()

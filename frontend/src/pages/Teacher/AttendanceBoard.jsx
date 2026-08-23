@@ -78,7 +78,7 @@ export default function AttendanceBoard() {
     }
   };
 
-  const presentStudents = students.filter(s => s.status === 'P');
+  const presentStudents = students.filter(s => s.status === 'P' || s.status === 'L');
   const absentStudents = students.filter(s => s.status === 'A');
   const lateStudents = students.filter(s => s.status === 'L');
 
@@ -152,6 +152,11 @@ export default function AttendanceBoard() {
           <div style={{ fontSize: 12, color: 'var(--text-muted)', fontWeight: 600, textTransform: 'uppercase', letterSpacing: 1, marginTop: 4 }}>
             Present Today
           </div>
+          {lateStudents.length > 0 && (
+            <div style={{ marginTop: 8, fontSize: 11, color: '#059669', fontWeight: 500 }}>
+              (Includes {lateStudents.length} late)
+            </div>
+          )}
         </div>
 
         <div className="stat-card animate-slide-up stagger-3" style={{ minHeight: 140 }}>
