@@ -20,7 +20,6 @@ export default function TaskManager() {
   const [toast, setToast] = useState(null);
   const [expandedTask, setExpandedTask] = useState(null);
 
-  // Modal state
   const [showModal, setShowModal] = useState(false);
   const [taskTitle, setTaskTitle] = useState('');
   const [dueDate, setDueDate] = useState('');
@@ -58,7 +57,14 @@ export default function TaskManager() {
 
   const createTask = async (e) => {
     e.preventDefault();
-    if (!taskTitle.trim() || !selectedSubject) return;
+    if (!taskTitle.trim()) {
+      showToast('Please enter a task name', 'error');
+      return;
+    }
+    if (!selectedSubject) {
+      showToast('Please select a subject', 'error');
+      return;
+    }
     setCreating(true);
     try {
       await api.post('/tasks/', {
@@ -130,14 +136,12 @@ export default function TaskManager() {
         <p>Assignments for your class</p>
       </div>
 
-      {/* New Task Button */}
       <div style={{ marginBottom: 28 }}>
         <button onClick={() => setShowModal(true)} className="btn btn-primary" style={{ padding: '12px 28px' }}>
           + New Task
         </button>
       </div>
 
-      {/* Modal */}
       {showModal && (
         <div style={{
           position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.4)', backdropFilter: 'blur(4px)',
@@ -152,23 +156,29 @@ export default function TaskManager() {
               </div>
               <div style={{ marginBottom: 16 }}>
                 <label style={{ display: 'block', fontSize: 13, fontWeight: 600, color: 'var(--text-secondary)', marginBottom: 6, textTransform: 'uppercase', letterSpacing: 0.5 }}>Subject</label>
-                <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap' }}>
-                  {subjects.map(sub => (
-                    <button
-                      key={sub.id}
-                      type="button"
-                      onClick={() => setSelectedSubject(String(sub.id))}
-                      style={{
-                        padding: '8px 16px', borderRadius: 20, border: 'none', fontSize: 13, fontWeight: 600, cursor: 'pointer',
-                        background: selectedSubject === String(sub.id) ? sub.color : '#f1f5f9',
-                        color: selectedSubject === String(sub.id) ? 'white' : '#64748b',
-                        transition: 'all 0.2s ease'
-                      }}
-                    >
-                      {sub.name}
-                    </button>
-                  ))}
-                </div>
+                {subjects.length === 0 ? (
+                  <p style={{ color: '#ef4444', fontSize: 13, fontWeight: 500 }}>
+                    No subjects found. Run <b>Seed Data</b> from Admin first.
+                  </p>
+                ) : (
+                  <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap' }}>
+                    {subjects.map(sub => (
+                      <button
+                        key={sub.id}
+                        type="button"
+                        onClick={() => setSelectedSubject(String(sub.id))}
+                        style={{
+                          padding: '8px 16px', borderRadius: 20, border: 'none', fontSize: 13, fontWeight: 600, cursor: 'pointer',
+                          background: selectedSubject === String(sub.id) ? sub.color : '#f1f5f9',
+                          color: selectedSubject === String(sub.id) ? 'white' : '#64748b',
+                          transition: 'all 0.2s ease'
+                        }}
+                      >
+                        {sub.name}
+                      </button>
+                    ))}
+                  </div>
+                )}
               </div>
               <div style={{ marginBottom: 24 }}>
                 <label style={{ display: 'block', fontSize: 13, fontWeight: 600, color: 'var(--text-secondary)', marginBottom: 6, textTransform: 'uppercase', letterSpacing: 0.5 }}>Due Date</label>
@@ -183,7 +193,6 @@ export default function TaskManager() {
         </div>
       )}
 
-      {/* Task Cards */}
       {tasks.length === 0 && (
         <div className="glass" style={{ textAlign: 'center', padding: 60 }}>
           <p style={{ fontSize: 48, marginBottom: 16 }}>📝</p>
@@ -197,7 +206,6 @@ export default function TaskManager() {
           const isExpanded = expandedTask === task.task_id;
           return (
             <div key={task.task_id} className="glass animate-slide-up" style={{ padding: 0, overflow: 'hidden' }}>
-              {/* Card Header - Click to expand */}
               <div
                 onClick={() => setExpandedTask(isExpanded ? null : task.task_id)}
                 style={{
@@ -255,7 +263,6 @@ export default function TaskManager() {
                 </div>
               </div>
 
-              {/* Expanded Student List */}
               {isExpanded && (
                 <div style={{ borderTop: '1px solid var(--border)', padding: '16px 24px 24px', background: '#fafafa' }}>
                   <div className="table-wrap">
