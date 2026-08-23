@@ -33,13 +33,14 @@ def register(user: UserCreate, db: Session = Depends(get_db)):
         email=user.email,
         hashed_password=get_password_hash(user.password),
         role=user.role,
-        school_id=user.school_id
+        school_id=user.school_id,
+        assigned_class_id=user.assigned_class_id
     )
     db.add(new_user)
     db.commit()
     db.refresh(new_user)
     token = create_access_token(data={"sub": str(new_user.id)})
-    return {"access_token": token, "token_type": "bearer", "role": new_user.role, "email": new_user.email}
+    return {"access_token": token, "token_type": "bearer", "role": new_user.role, "email": new_user.email, "assigned_class_id": new_user.assigned_class_id}
 
 @router.post("/login", response_model=Token)
 def login(user: UserLogin, db: Session = Depends(get_db)):
@@ -47,4 +48,4 @@ def login(user: UserLogin, db: Session = Depends(get_db)):
     if not db_user or not verify_password(user.password, db_user.hashed_password):
         raise HTTPException(status_code=400, detail="Invalid email or password")
     token = create_access_token(data={"sub": str(db_user.id)})
-    return {"access_token": token, "token_type": "bearer", "role": db_user.role, "email": db_user.email}
+    return {"access_token": token, "token_type": "bearer", "role": db_user.role, "email": db_user.email, "assigned_class_id": db_user.assigned_class_id}

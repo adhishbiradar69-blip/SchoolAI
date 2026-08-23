@@ -510,3 +510,7 @@ tr:last-child td {
   .main-area { margin-left: 0; padding: 20px; max-width: 100vw; }
 }
 @keyframes spin { to { transform: rotate(360deg); } }
+.stagger-1 { animation-delay: 0.05s; opacity: 0; }
+.stagger-2 { animation-delay: 0.1s; opacity: 0; }
+.stagger-3 { animation-delay: 0.15s; opacity: 0; }
+.stagger-4 { animation-delay: 0.2s; opacity: 0; }

@@ -3,17 +3,11 @@ import { useAuth } from '../auth/AuthContext';
 
 const allNavGroups = [
   {
-    label: 'Teacher',
-    roles: ['teacher', 'admin'],
+    label: 'Class Teacher',
+    roles: ['class_teacher', 'admin'],
     items: [
       { path: '/teacher/attendance', label: 'Attendance', icon: '📋' },
       { path: '/teacher/tasks', label: 'Tasks', icon: '✅' },
-    ]
-  },
-  {
-    label: 'Class Teacher',
-    roles: ['teacher', 'admin'],
-    items: [
       { path: '/class-teacher/report', label: 'Class Report', icon: '📊' },
     ]
   },
@@ -27,10 +21,10 @@ const allNavGroups = [
     ]
   },
   {
-    label: 'Management',
+    label: 'Principal',
     roles: ['principal', 'admin'],
     items: [
-      { path: '/principal/dashboard', label: 'Principal', icon: '👔' },
+      { path: '/principal/dashboard', label: 'Dashboard', icon: '👔' },
       { path: '/principal/ai', label: 'AI Assistant', icon: '🤖' },
     ]
   },
@@ -38,7 +32,7 @@ const allNavGroups = [
     label: 'Vice Principal',
     roles: ['vp', 'admin'],
     items: [
-      { path: '/vp/dashboard', label: 'Vice Principal', icon: '🎯' },
+      { path: '/vp/dashboard', label: 'Dashboard', icon: '🎯' },
     ]
   },
   {
@@ -55,10 +49,10 @@ export default function Layout({ children }) {
   const navigate = useNavigate();
   const location = useLocation();
 
-  const userRole = user?.role || 'teacher';
+  const userRole = user?.role || 'class_teacher';
   
   const visibleGroups = allNavGroups.filter(g => 
-    g.roles.includes(userRole) || userRole === 'admin'
+    g.roles.includes(userRole)
   );
 
   const handleLogout = () => {

@@ -1,15 +1,16 @@
 from fastapi import APIRouter, Depends, HTTPException
 from sqlalchemy.orm import Session
+from datetime import date
+import random
 from app.database import get_db
 from app.models.school import School
 from app.models.class_ import Class
 from app.models.student import Student
+from app.models.user import User
 from app.models.attendance import Attendance
 from app.models.mark import Mark
 from app.schemas.student import SchoolCreate, ClassCreate, StudentCreate
 from app.dependencies import get_current_user
-from datetime import date, timedelta
-import random
 
 router = APIRouter(prefix="/admin", tags=["admin"])
 
@@ -53,16 +54,20 @@ def create_student(data: StudentCreate, db: Session = Depends(get_db), user=Depe
 
 @router.post("/seed")
 def seed_data(db: Session = Depends(get_db), user=Depends(get_current_user)):
-    """Creates a school, class, 30 students, attendance for today, and random marks."""
     school = School(name="Greenwood High")
     db.add(school)
     db.commit()
     db.refresh(school)
     
-    cls = Class(school_id=school.id, grade="6", section="A")
+    cls = Class(school_id=school.id, grade="10", section="B")
     db.add(cls)
     db.commit()
     db.refresh(cls)
+    
+    db_user = db.query(User).filter(User.id == user.id).first()
+    if db_user:
+        db_user.assigned_class_id = cls.id
+        db.commit()
     
     first_names = ["Aarav", "Vivaan", "Aditya", "Vihaan", "Arjun", "Sai", "Arnav", "Ayaan", "Krishna", "Ishaan", "Shaurya", "Atharv", "Aarush", "Kabir", "Darsh", "Ananya", "Diya", "Saanvi", "Aadhya", "Navya", "Myra", "Pari", "Kavya", "Sara", "Ira", "Aaradhya", "Meera", "Tara", "Riya", "Jiya"]
     

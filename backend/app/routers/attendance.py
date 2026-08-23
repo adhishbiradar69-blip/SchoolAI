@@ -4,10 +4,18 @@ from datetime import date
 from app.database import get_db
 from app.models.attendance import Attendance
 from app.models.student import Student
+from app.models.class_ import Class
 from app.schemas.attendance import AttendanceBulkCreate
 from app.dependencies import get_current_user
 
 router = APIRouter(prefix="/attendance", tags=["attendance"])
+
+@router.get("/teacher/classes")
+def get_teacher_classes(db: Session = Depends(get_db), user=Depends(get_current_user)):
+    classes = db.query(Class).filter(Class.class_teacher_id == user.id).all()
+    if not classes:
+        classes = db.query(Class).all()
+    return [{"id": c.id, "grade": c.grade, "section": c.section} for c in classes]
 
 @router.post("/mark")
 def mark_attendance(data: AttendanceBulkCreate, db: Session = Depends(get_db), user=Depends(get_current_user)):
@@ -53,3 +61,21 @@ def get_class_attendance(class_id: int, date: date, db: Session = Depends(get_db
             for s in students
         ]
     }
+
+@router.get("/summary/{class_id}")
+def get_attendance_summary(class_id: int, db: Session = Depends(get_db), user=Depends(get_current_user)):
+    students = db.query(Student).filter(Student.class_id == class_id).all()
+    result = []
+    for s in students:
+        records = db.query(Attendance).filter(Attendance.student_id == s.id).all()
+        total = len(records)
+        present = len([r for r in records if r.status == 'P'])
+        rate = round((present / total) * 100, 1) if total > 0 else 0
+        result.append({
+            "student_id": s.id,
+            "name": s.name,
+            "total_marked": total,
+            "present_days": present,
+            "attendance_rate": rate
+        })
+    return result

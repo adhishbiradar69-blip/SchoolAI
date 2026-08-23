@@ -6,6 +6,7 @@ class UserCreate(BaseModel):
     password: str
     role: str
     school_id: Optional[int] = None
+    assigned_class_id: Optional[int] = None
 
 class UserLogin(BaseModel):
     email: str
@@ -16,3 +17,4 @@ class Token(BaseModel):
     token_type: str = "bearer"
     role: str
     email: str
+    assigned_class_id: Optional[int] = None

@@ -1,29 +1,31 @@
 import { useState, useEffect } from 'react';
 import api from '../../api/client';
+import { useAuth } from '../../auth/AuthContext';
 
 function Toast({ message, type, onClose }) {
   useEffect(() => {
     const t = setTimeout(onClose, 2500);
     return () => clearTimeout(t);
   }, [onClose]);
-
-  return (
-    <div className={`toast toast-${type}`}>
-      {type === 'success' ? '✓ ' : '✕ '}{message}
-    </div>
-  );
+  return <div className={`toast toast-${type}`}>{type === 'success' ? '✓ ' : '✕ '}{message}</div>;
 }
 
 export default function AttendanceBoard() {
+  const { user } = useAuth();
+  const classId = user?.assigned_class_id;
+
   const [students, setStudents] = useState([]);
-  const [date, setDate] = useState(new Date().toISOString().split('T')[0]);
+  const [date, setDate] = useState(() => {
+    const t = new Date();
+    return `${t.getFullYear()}-${String(t.getMonth() + 1).padStart(2, '0')}-${String(t.getDate()).padStart(2, '0')}`;
+  });
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
   const [toast, setToast] = useState(null);
 
   useEffect(() => {
-    fetchAttendance();
-  }, [date]);
+    if (classId) fetchAttendance();
+  }, [date, classId]);
 
   const showToast = (message, type) => {
     setToast({ message, type });
@@ -33,8 +35,11 @@ export default function AttendanceBoard() {
   const fetchAttendance = async () => {
     setLoading(true);
     try {
-      const res = await api.get(`/attendance/class/1?date=${date}`);
-      setStudents(res.data.students);
+      const res = await api.get(`/attendance/class/${classId}?date=${date}`);
+      setStudents(res.data.students.map(s => ({
+        ...s,
+        status: s.status === 'Not Marked' ? 'P' : s.status
+      })));
     } catch (err) {
       console.error(err);
     }
@@ -44,7 +49,7 @@ export default function AttendanceBoard() {
   const toggleStatus = (id) => {
     setStudents(prev => prev.map(s => {
       if (s.id === id) {
-        const cycle = { 'P': 'A', 'A': 'L', 'L': 'P', 'Not Marked': 'P' };
+        const cycle = { 'P': 'A', 'A': 'L', 'L': 'P' };
         return { ...s, status: cycle[s.status] || 'P' };
       }
       return s;
@@ -60,7 +65,7 @@ export default function AttendanceBoard() {
       case 'P': return 'pill-present';
       case 'A': return 'pill-absent';
       case 'L': return 'pill-late';
-      default: return 'pill-unmarked';
+      default: return 'pill-present';
     }
   };
 
@@ -69,25 +74,22 @@ export default function AttendanceBoard() {
       case 'P': return 'Present';
       case 'A': return 'Absent';
       case 'L': return 'Late';
-      default: return 'Mark';
+      default: return 'Present';
     }
   };
 
-  const stats = {
-    present: students.filter(s => s.status === 'P').length,
-    absent: students.filter(s => s.status === 'A').length,
-    late: students.filter(s => s.status === 'L').length,
-    unmarked: students.filter(s => s.status === 'Not Marked').length,
-  };
+  const presentStudents = students.filter(s => s.status === 'P');
+  const absentStudents = students.filter(s => s.status === 'A');
+  const lateStudents = students.filter(s => s.status === 'L');
 
   const saveAttendance = async () => {
     setSaving(true);
     const marks = students.map(s => ({
       student_id: s.id,
-      status: s.status === 'Not Marked' ? 'P' : s.status
+      status: s.status
     }));
     try {
-      await api.post('/attendance/mark', { class_id: 1, date, marks });
+      await api.post('/attendance/mark', { class_id: classId, date, marks });
       showToast('Attendance saved successfully!', 'success');
     } catch (err) {
       showToast('Failed to save attendance', 'error');
@@ -95,7 +97,19 @@ export default function AttendanceBoard() {
     setSaving(false);
   };
 
-  if (loading) {
+  if (!classId) {
+    return (
+      <div className="animate-fade" style={{ padding: 40 }}>
+        <div className="glass" style={{ textAlign: 'center', padding: 60 }}>
+          <p style={{ fontSize: 48, marginBottom: 16 }}>⚠️</p>
+          <h3 style={{ fontSize: 20, fontWeight: 700, marginBottom: 8 }}>No Class Assigned</h3>
+          <p style={{ color: 'var(--text-secondary)' }}>Please contact the administrator to assign you a class.</p>
+        </div>
+      </div>
+    );
+  }
+
+  if (loading && students.length === 0) {
     return (
       <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', height: '60vh' }}>
         <div style={{ textAlign: 'center' }}>
@@ -119,29 +133,52 @@ export default function AttendanceBoard() {
 
       <div className="page-header">
         <h2>Attendance</h2>
-        <p>Mark daily attendance for Class 6A</p>
+        <p>Mark daily attendance</p>
       </div>
 
       {/* Stats */}
       <div className="stat-grid">
-        {[
-          { label: 'Present', value: stats.present, color: '#10b981', bg: '#d1fae5', icon: '✓' },
-          { label: 'Absent', value: stats.absent, color: '#ef4444', bg: '#fee2e2', icon: '✕' },
-          { label: 'Late', value: stats.late, color: '#f59e0b', bg: '#fef3c7', icon: '⏱' },
-          { label: 'Unmarked', value: stats.unmarked, color: '#94a3b8', bg: '#f1f5f9', icon: '○' },
-        ].map((stat, i) => (
-          <div key={stat.label} className="stat-card animate-slide-up" style={{ animationDelay: `${i * 0.05}s` }}>
-            <div className="stat-icon" style={{ background: stat.bg, color: stat.color }}>
-              {stat.icon}
-            </div>
-            <div style={{ fontSize: 32, fontWeight: 800, color: stat.color, lineHeight: 1 }}>
-              {stat.value}
-            </div>
-            <div style={{ fontSize: 12, color: 'var(--text-muted)', fontWeight: 600, textTransform: 'uppercase', letterSpacing: 1, marginTop: 4 }}>
-              {stat.label}
-            </div>
+        <div className="stat-card animate-slide-up stagger-1">
+          <div className="stat-icon" style={{ background: '#f1f5f9', color: '#f4f9ff' }}>🏫</div>
+          <div style={{ fontSize: 32, fontWeight: 800 }}>{students.length}</div>
+          <div style={{ fontSize: 12, color: 'var(--text-muted)', fontWeight: 600, textTransform: 'uppercase', letterSpacing: 1, marginTop: 4 }}>
+            Total Students
           </div>
-        ))}
+        </div>
+
+        <div className="stat-card animate-slide-up stagger-2">
+          <div className="stat-icon" style={{ background: '#d1fae5', color: '#10b981' }}>✓</div>
+          <div style={{ fontSize: 32, fontWeight: 800, color: '#10b981' }}>{presentStudents.length}</div>
+          <div style={{ fontSize: 12, color: 'var(--text-muted)', fontWeight: 600, textTransform: 'uppercase', letterSpacing: 1, marginTop: 4 }}>
+            Present Today
+          </div>
+        </div>
+
+        <div className="stat-card animate-slide-up stagger-3" style={{ minHeight: 140 }}>
+          <div className="stat-icon" style={{ background: '#fee2e2', color: '#ef4444' }}>✕</div>
+          <div style={{ fontSize: 32, fontWeight: 800, color: '#ef4444' }}>{absentStudents.length}</div>
+          <div style={{ fontSize: 12, color: 'var(--text-muted)', fontWeight: 600, textTransform: 'uppercase', letterSpacing: 1, marginTop: 4 }}>
+            Absent Today
+          </div>
+          {absentStudents.length > 0 && (
+            <div style={{ marginTop: 10, fontSize: 12, color: '#b91c1c', fontWeight: 500, lineHeight: 1.5 }}>
+              {absentStudents.map(s => s.name).join(', ')}
+            </div>
+          )}
+        </div>
+
+        <div className="stat-card animate-slide-up stagger-4" style={{ minHeight: 140 }}>
+          <div className="stat-icon" style={{ background: '#fef3c7', color: '#f59e0b' }}>⏱</div>
+          <div style={{ fontSize: 32, fontWeight: 800, color: '#f59e0b' }}>{lateStudents.length}</div>
+          <div style={{ fontSize: 12, color: 'var(--text-muted)', fontWeight: 600, textTransform: 'uppercase', letterSpacing: 1, marginTop: 4 }}>
+            Late Today
+          </div>
+          {lateStudents.length > 0 && (
+            <div style={{ marginTop: 10, fontSize: 12, color: '#b45309', fontWeight: 500, lineHeight: 1.5 }}>
+              {lateStudents.map(s => s.name).join(', ')}
+            </div>
+          )}
+        </div>
       </div>
 
       {/* Controls */}
@@ -152,6 +189,7 @@ export default function AttendanceBoard() {
             type="date"
             value={date}
             onChange={(e) => setDate(e.target.value)}
+            onKeyDown={(e) => e.preventDefault()}
             className="input"
             style={{ width: 'auto', minWidth: 150 }}
           />
@@ -159,13 +197,10 @@ export default function AttendanceBoard() {
         
         <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap' }}>
           <button onClick={() => markAll('P')} className="btn btn-secondary" style={{ fontSize: 13 }}>
-            Mark All Present
+            All Present
           </button>
           <button onClick={() => markAll('A')} className="btn btn-secondary" style={{ fontSize: 13 }}>
-            Mark All Absent
-          </button>
-          <button onClick={saveAttendance} disabled={saving} className="btn btn-primary" style={{ fontSize: 13 }}>
-            {saving ? 'Saving...' : '💾 Save'}
+            All Absent
           </button>
         </div>
       </div>
@@ -175,9 +210,9 @@ export default function AttendanceBoard() {
         <table>
           <thead>
             <tr>
-              <th style={{ width: 60, textAlign: 'center' }}>#</th>
+              <th style={{ width: 50, textAlign: 'center' }}>#</th>
               <th>Student Name</th>
-              <th style={{ width: 160, textAlign: 'center' }}>Status</th>
+              <th style={{ width: 140, textAlign: 'center' }}>Status</th>
             </tr>
           </thead>
           <tbody>
@@ -199,6 +234,13 @@ export default function AttendanceBoard() {
             ))}
           </tbody>
         </table>
+      </div>
+
+      {/* Save button - bottom left after last student */}
+      <div style={{ marginTop: 24, display: 'flex', justifyContent: 'flex-start' }}>
+        <button onClick={saveAttendance} disabled={saving} className="btn btn-primary" style={{ padding: '12px 36px', fontSize: 15 }}>
+          {saving ? 'Saving...' : ' Save Attendance'}
+        </button>
       </div>
     </div>
   );
