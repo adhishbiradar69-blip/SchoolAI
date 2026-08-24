@@ -150,26 +150,27 @@ export default function TaskManager() {
           <p>Set up an assignment for your class</p>
         </div>
 
-        <div className="glass" style={{ padding: 0, maxWidth: 720 }}>
+        <div className="glass form-card" style={{ padding: 0, maxWidth: 720 }}>
           <div style={{ padding: '32px 36px', borderBottom: '1px solid var(--border)' }}>
             <h3 style={{ fontSize: 15, fontWeight: 700, color: 'var(--text-secondary)', textTransform: 'uppercase', letterSpacing: 1 }}>Task Details</h3>
+            <div className="form-header-line" style={{ maxWidth: 80 }} />
           </div>
 
           <form onSubmit={createTask} style={{ padding: '32px 36px' }}>
-            <div style={{ marginBottom: 24 }}>
+            <div className="form-field form-field-d1" style={{ marginBottom: 24 }}>
               <label style={{ display: 'block', fontSize: 12, fontWeight: 700, color: 'var(--text-secondary)', marginBottom: 8, textTransform: 'uppercase', letterSpacing: 0.8 }}>Task Name *</label>
               <input
                 type="text"
                 placeholder="e.g., Chapter 5 Exercise, Science Project..."
                 value={taskTitle}
                 onChange={e => setTaskTitle(e.target.value)}
-                className="input"
+                className="input input-glow"
                 style={{ fontSize: 16, padding: '14px 18px' }}
                 required
               />
             </div>
 
-            <div style={{ marginBottom: 24 }}>
+            <div className="form-field form-field-d2" style={{ marginBottom: 24 }}>
               <label style={{ display: 'block', fontSize: 12, fontWeight: 700, color: 'var(--text-secondary)', marginBottom: 8, textTransform: 'uppercase', letterSpacing: 0.8 }}>Subject *</label>
               {subjects.length === 0 ? (
                 <p style={{ color: '#ef4444', fontSize: 14, fontWeight: 500 }}>
@@ -177,18 +178,20 @@ export default function TaskManager() {
                 </p>
               ) : (
                 <div style={{ display: 'flex', gap: 10, flexWrap: 'wrap' }}>
-                  {subjects.map(sub => (
+                  {subjects.map((sub, i) => (
                     <button
                       key={sub.id}
                       type="button"
                       onClick={() => setSelectedSubject(String(sub.id))}
+                      className={`chip-animate chip-d${Math.min(i + 1, 6)}`}
                       style={{
                         padding: '10px 20px', borderRadius: 24, border: 'none', fontSize: 14, fontWeight: 600, cursor: 'pointer',
                         background: selectedSubject === String(sub.id) ? sub.color : 'rgba(255,255,255,0.6)',
                         color: selectedSubject === String(sub.id) ? 'white' : '#64748b',
-                        transition: 'all 0.2s ease',
-                        boxShadow: selectedSubject === String(sub.id) ? '0 4px 12px rgba(0,0,0,0.15)' : '0 1px 3px rgba(0,0,0,0.05)',
-                        border: selectedSubject === String(sub.id) ? 'none' : '1.5px solid var(--border-strong)'
+                        transition: 'all 0.25s var(--ease-spring)',
+                        boxShadow: selectedSubject === String(sub.id) ? '0 4px 16px rgba(0,0,0,0.18)' : '0 1px 3px rgba(0,0,0,0.05)',
+                        border: selectedSubject === String(sub.id) ? 'none' : '1.5px solid var(--border-strong)',
+                        transform: selectedSubject === String(sub.id) ? 'scale(1.05)' : 'scale(1)'
                       }}
                     >
                       {sub.name}
@@ -198,19 +201,19 @@ export default function TaskManager() {
               )}
             </div>
 
-            <div style={{ marginBottom: 32 }}>
+            <div className="form-field form-field-d3" style={{ marginBottom: 32 }}>
               <label style={{ display: 'block', fontSize: 12, fontWeight: 700, color: 'var(--text-secondary)', marginBottom: 8, textTransform: 'uppercase', letterSpacing: 0.8 }}>Due Date</label>
               <input
                 type="date"
                 value={dueDate}
                 onChange={e => setDueDate(e.target.value)}
-                className="input"
+                className="input input-glow"
                 style={{ width: 'auto', fontSize: 15, padding: '12px 18px' }}
               />
               <p style={{ fontSize: 12, color: 'var(--text-muted)', marginTop: 6 }}>Optional — leave blank if no deadline</p>
             </div>
 
-            <div style={{ display: 'flex', gap: 12 }}>
+            <div className="form-field form-field-d4" style={{ display: 'flex', gap: 12 }}>
               <button type="button" onClick={cancelForm} className="btn btn-secondary" style={{ padding: '12px 32px' }}>Cancel</button>
               <button type="submit" className="btn btn-primary" disabled={creating} style={{ padding: '12px 32px' }}>
                 {creating ? 'Creating...' : '✓ Create Task'}
