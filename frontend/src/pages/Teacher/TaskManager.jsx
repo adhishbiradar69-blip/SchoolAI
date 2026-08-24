@@ -295,7 +295,7 @@ export default function TaskManager() {
                                     background: st.bg,
                                     color: st.color,
                                     border: `1.5px solid ${st.border}`,
-                                    minWidth: 90,
+                                    width: 100,
                                     fontWeight: 700
                                   }}
                                 >
