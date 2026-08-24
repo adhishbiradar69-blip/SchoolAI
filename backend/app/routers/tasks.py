@@ -6,6 +6,7 @@ from app.models.student import Student
 from app.models.subject import Subject
 from app.schemas.task import TaskCreate, TaskStatusUpdate
 from app.dependencies import get_current_user
+from datetime import date
 
 router = APIRouter(prefix="/tasks", tags=["tasks"])
 
@@ -81,3 +82,36 @@ def delete_task(task_id: int, db: Session = Depends(get_db), user=Depends(get_cu
         db.delete(task)
         db.commit()
     return {"status": "deleted"}
+
+
+@router.get("/class/{class_id}")
+def get_class_tasks(class_id: int, db: Session = Depends(get_db), user=Depends(get_current_user)):
+    tasks = db.query(Task).filter(Task.class_id == class_id).order_by(Task.id.desc()).all()
+    students = db.query(Student).filter(Student.class_id == class_id).all()
+    today = date.today()
+    
+    result = []
+    for task in tasks:
+        subject = db.query(Subject).filter(Subject.id == task.subject_id).first()
+        completions = db.query(TaskCompletion).filter(TaskCompletion.task_id == task.id).all()
+        comp_map = {c.student_id: c.status for c in completions}
+        
+        students_data = []
+        for s in students:
+            status = comp_map.get(s.id, "pending")
+            if task.due_date and task.due_date < today and status == "pending":
+                status = "late"
+            students_data.append({
+                "id": s.id,
+                "name": s.name,
+                "status": status
+            })
+        
+        result.append({
+            "task_id": task.id,
+            "title": task.title,
+            "due_date": str(task.due_date) if task.due_date else None,
+            "subject": {"id": subject.id, "name": subject.name, "color": subject.color} if subject else {"id": 0, "name": "General", "color": "#64748b"},
+            "students": students_data
+        })
+    return result

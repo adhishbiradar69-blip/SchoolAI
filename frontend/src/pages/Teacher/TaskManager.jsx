@@ -107,6 +107,12 @@ export default function TaskManager() {
     return Math.round((students.filter(s => s.status === 'completed').length / students.length) * 100);
   };
 
+  const getStatusStyle = (status) => {
+    if (status === 'completed') return { bg: '#d1fae5', color: '#047857', border: '#10b981', label: '✓ Done' };
+    if (status === 'late') return { bg: '#fee2e2', color: '#b91c1c', border: '#ef4444', label: '✗ Late' };
+    return { bg: '#f1f5f9', color: '#64748b', border: '#e2e8f0', label: '○ Pending' };
+  };
+
   if (!classId) {
     return (
       <div className="animate-fade" style={{ padding: 40 }}>
@@ -144,10 +150,10 @@ export default function TaskManager() {
 
       {showModal && (
         <div style={{
-          position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.4)', backdropFilter: 'blur(4px)',
+          position: 'fixed', inset: 0, background: 'rgba(248, 250, 252, 0.94)', backdropFilter: 'blur(12px)',
           display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 9999
         }} onClick={() => setShowModal(false)}>
-          <div className="glass animate-scale" style={{ padding: 32, width: '100%', maxWidth: 440 }} onClick={e => e.stopPropagation()}>
+          <div className="glass animate-scale" style={{ padding: 32, width: '100%', maxWidth: 440, margin: 'auto' }} onClick={e => e.stopPropagation()}>
             <h3 style={{ fontSize: 20, fontWeight: 700, marginBottom: 20 }}>Create New Task</h3>
             <form onSubmit={createTask}>
               <div style={{ marginBottom: 16 }}>
@@ -169,7 +175,7 @@ export default function TaskManager() {
                         onClick={() => setSelectedSubject(String(sub.id))}
                         style={{
                           padding: '8px 16px', borderRadius: 20, border: 'none', fontSize: 13, fontWeight: 600, cursor: 'pointer',
-                          background: selectedSubject === String(sub.id) ? sub.color : '#f1f5f9',
+                          background: selectedSubject === String(sub.id) ? sub.color : 'rgba(255,255,255,0.45)',
                           color: selectedSubject === String(sub.id) ? 'white' : '#64748b',
                           transition: 'all 0.2s ease'
                         }}
@@ -274,28 +280,31 @@ export default function TaskManager() {
                         </tr>
                       </thead>
                       <tbody>
-                        {task.students.map((s) => (
-                          <tr key={s.id}>
-                            <td style={{ fontWeight: 600 }}>{s.name}</td>
-                            <td style={{ textAlign: 'center' }}>
-                              <button
-                                onClick={() => toggleStatus(task.task_id, s.id, s.status)}
-                                className="pill"
-                                style={{
-                                  padding: '6px 18px',
-                                  fontSize: 12,
-                                  background: s.status === 'completed' ? '#d1fae5' : '#f1f5f9',
-                                  color: s.status === 'completed' ? '#047857' : '#64748b',
-                                  border: `1.5px solid ${s.status === 'completed' ? '#10b981' : '#e2e8f0'}`,
-                                  minWidth: 90,
-                                  fontWeight: 700
-                                }}
-                              >
-                                {s.status === 'completed' ? '✓ Done' : '○ Pending'}
-                              </button>
-                            </td>
-                          </tr>
-                        ))}
+                        {task.students.map((s) => {
+                          const st = getStatusStyle(s.status);
+                          return (
+                            <tr key={s.id}>
+                              <td style={{ fontWeight: 600 }}>{s.name}</td>
+                              <td style={{ textAlign: 'center' }}>
+                                <button
+                                  onClick={() => toggleStatus(task.task_id, s.id, s.status)}
+                                  className="pill"
+                                  style={{
+                                    padding: '6px 18px',
+                                    fontSize: 12,
+                                    background: st.bg,
+                                    color: st.color,
+                                    border: `1.5px solid ${st.border}`,
+                                    minWidth: 90,
+                                    fontWeight: 700
+                                  }}
+                                >
+                                  {st.label}
+                                </button>
+                              </td>
+                            </tr>
+                          );
+                        })}
                       </tbody>
                     </table>
                   </div>

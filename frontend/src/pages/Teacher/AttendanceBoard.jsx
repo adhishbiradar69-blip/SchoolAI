@@ -78,7 +78,7 @@ export default function AttendanceBoard() {
     }
   };
 
-  const presentStudents = students.filter(s => s.status === 'P' || s.status === 'L');
+  const presentStudents = students.filter(s => s.status === 'P');
   const absentStudents = students.filter(s => s.status === 'A');
   const lateStudents = students.filter(s => s.status === 'L');
 
@@ -136,55 +136,90 @@ export default function AttendanceBoard() {
         <p>Mark daily attendance</p>
       </div>
 
-      {/* Stats */}
+      {/* Stats - clean numbers only */}
       <div className="stat-grid">
-        <div className="stat-card animate-slide-up stagger-1">
-          <div className="stat-icon" style={{ background: '#f1f5f9', color: '#f4f9ff' }}>🏫</div>
-          <div style={{ fontSize: 32, fontWeight: 800 }}>{students.length}</div>
+        <div className="stat-card animate-slide-up">
+          <div className="stat-icon" style={{ background: 'linear-gradient(135deg, #e0e7ff 0%, #c7d2fe 100%)', fontSize: 22 }}>🏫</div>
+          <div style={{ fontSize: 36, fontWeight: 800, letterSpacing: '-1px' }}>{students.length}</div>
           <div style={{ fontSize: 12, color: 'var(--text-muted)', fontWeight: 600, textTransform: 'uppercase', letterSpacing: 1, marginTop: 4 }}>
             Total Students
           </div>
         </div>
 
-        <div className="stat-card animate-slide-up stagger-2">
-          <div className="stat-icon" style={{ background: '#d1fae5', color: '#10b981' }}>✓</div>
-          <div style={{ fontSize: 32, fontWeight: 800, color: '#10b981' }}>{presentStudents.length}</div>
+        <div className="stat-card animate-slide-up">
+          <div className="stat-icon" style={{ background: 'linear-gradient(135deg, #d1fae5 0%, #a7f3d0 100%)', fontSize: 22 }}>✓</div>
+          <div style={{ fontSize: 36, fontWeight: 800, color: '#059669', letterSpacing: '-1px' }}>{presentStudents.length}</div>
           <div style={{ fontSize: 12, color: 'var(--text-muted)', fontWeight: 600, textTransform: 'uppercase', letterSpacing: 1, marginTop: 4 }}>
             Present Today
           </div>
-          {lateStudents.length > 0 && (
-            <div style={{ marginTop: 8, fontSize: 11, color: '#059669', fontWeight: 500 }}>
-              (Includes {lateStudents.length} late)
-            </div>
-          )}
         </div>
 
-        <div className="stat-card animate-slide-up stagger-3" style={{ minHeight: 140 }}>
-          <div className="stat-icon" style={{ background: '#fee2e2', color: '#ef4444' }}>✕</div>
-          <div style={{ fontSize: 32, fontWeight: 800, color: '#ef4444' }}>{absentStudents.length}</div>
+        <div className="stat-card animate-slide-up">
+          <div className="stat-icon" style={{ background: 'linear-gradient(135deg, #fee2e2 0%, #fecaca 100%)', fontSize: 22 }}>✕</div>
+          <div style={{ fontSize: 36, fontWeight: 800, color: '#dc2626', letterSpacing: '-1px' }}>{absentStudents.length}</div>
           <div style={{ fontSize: 12, color: 'var(--text-muted)', fontWeight: 600, textTransform: 'uppercase', letterSpacing: 1, marginTop: 4 }}>
             Absent Today
           </div>
-          {absentStudents.length > 0 && (
-            <div style={{ marginTop: 10, fontSize: 12, color: '#b91c1c', fontWeight: 500, lineHeight: 1.5 }}>
-              {absentStudents.map(s => s.name).join(', ')}
-            </div>
-          )}
         </div>
 
-        <div className="stat-card animate-slide-up stagger-4" style={{ minHeight: 140 }}>
-          <div className="stat-icon" style={{ background: '#fef3c7', color: '#f59e0b' }}>⏱</div>
-          <div style={{ fontSize: 32, fontWeight: 800, color: '#f59e0b' }}>{lateStudents.length}</div>
+        <div className="stat-card animate-slide-up">
+          <div className="stat-icon" style={{ background: 'linear-gradient(135deg, #fef3c7 0%, #fde68a 100%)', fontSize: 22 }}>⏱</div>
+          <div style={{ fontSize: 36, fontWeight: 800, color: '#d97706', letterSpacing: '-1px' }}>{lateStudents.length}</div>
           <div style={{ fontSize: 12, color: 'var(--text-muted)', fontWeight: 600, textTransform: 'uppercase', letterSpacing: 1, marginTop: 4 }}>
             Late Today
           </div>
-          {lateStudents.length > 0 && (
-            <div style={{ marginTop: 10, fontSize: 12, color: '#b45309', fontWeight: 500, lineHeight: 1.5 }}>
-              {lateStudents.map(s => s.name).join(', ')}
-            </div>
-          )}
         </div>
       </div>
+
+      {/* Summary chips - only show if there are absent/late students */}
+      {(absentStudents.length > 0 || lateStudents.length > 0) && (
+        <div className="glass animate-slide-up" style={{ padding: 20, marginBottom: 24 }}>
+          <div style={{ display: 'flex', gap: 24, flexWrap: 'wrap' }}>
+            {absentStudents.length > 0 && (
+              <div style={{ flex: 1, minWidth: 200 }}>
+                <div style={{ fontSize: 11, fontWeight: 700, textTransform: 'uppercase', letterSpacing: 1, color: '#dc2626', marginBottom: 10 }}>
+                  Absent ({absentStudents.length})
+                </div>
+                <div style={{ display: 'flex', flexWrap: 'wrap', gap: 6 }}>
+                  {absentStudents.map(s => (
+                    <span key={s.id} style={{
+                      padding: '5px 12px',
+                      borderRadius: 20,
+                      background: 'linear-gradient(135deg, #fee2e2 0%, #fecaca 100%)',
+                      color: '#991b1b',
+                      fontSize: 12,
+                      fontWeight: 600
+                    }}>
+                      {s.name}
+                    </span>
+                  ))}
+                </div>
+              </div>
+            )}
+            {lateStudents.length > 0 && (
+              <div style={{ flex: 1, minWidth: 200 }}>
+                <div style={{ fontSize: 11, fontWeight: 700, textTransform: 'uppercase', letterSpacing: 1, color: '#d97706', marginBottom: 10 }}>
+                  Late ({lateStudents.length})
+                </div>
+                <div style={{ display: 'flex', flexWrap: 'wrap', gap: 6 }}>
+                  {lateStudents.map(s => (
+                    <span key={s.id} style={{
+                      padding: '5px 12px',
+                      borderRadius: 20,
+                      background: 'linear-gradient(135deg, #fef3c7 0%, #fde68a 100%)',
+                      color: '#92400e',
+                      fontSize: 12,
+                      fontWeight: 600
+                    }}>
+                      {s.name}
+                    </span>
+                  ))}
+                </div>
+              </div>
+            )}
+          </div>
+        </div>
+      )}
 
       {/* Controls */}
       <div className="glass" style={{ padding: 20, marginBottom: 24, display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: 16 }}>
@@ -241,10 +276,10 @@ export default function AttendanceBoard() {
         </table>
       </div>
 
-      {/* Save button - bottom left after last student */}
+      {/* Save button */}
       <div style={{ marginTop: 24, display: 'flex', justifyContent: 'flex-start' }}>
         <button onClick={saveAttendance} disabled={saving} className="btn btn-primary" style={{ padding: '12px 36px', fontSize: 15 }}>
-          {saving ? 'Saving...' : ' Save Attendance'}
+          {saving ? 'Saving...' : '💾 Save Attendance'}
         </button>
       </div>
     </div>

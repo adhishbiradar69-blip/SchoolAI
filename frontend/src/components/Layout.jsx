@@ -1,3 +1,4 @@
+import { useState } from 'react';
 import { NavLink, useLocation, useNavigate } from 'react-router-dom';
 import { useAuth } from '../auth/AuthContext';
 
@@ -48,6 +49,7 @@ export default function Layout({ children }) {
   const { user, logout } = useAuth();
   const navigate = useNavigate();
   const location = useLocation();
+  const [collapsed, setCollapsed] = useState(false);
 
   const userRole = user?.role || 'class_teacher';
   
@@ -61,42 +63,54 @@ export default function Layout({ children }) {
   };
 
   return (
-    <div className="app-layout">
+    <div className={`app-layout ${collapsed ? 'sidebar-collapsed' : ''}`}>
       <aside className="sidebar">
         <div className="sidebar-brand">
-          <h1>SchoolAI</h1>
-          <p>Intelligent Management</p>
+          <div className="brand-text">
+            {!collapsed ? (
+              <>
+                <h1>SchoolAI</h1>
+                <p>Intelligent Management</p>
+              </>
+            ) : (
+              <h1 className="brand-logo">S</h1>
+            )}
+          </div>
+          <button 
+            className="sidebar-toggle"
+            onClick={() => setCollapsed(!collapsed)}
+            title={collapsed ? 'Expand' : 'Collapse'}
+          >
+            {collapsed ? '→' : '←'}
+          </button>
         </div>
 
-        <nav style={{ flex: 1, overflowY: 'auto', padding: '8px 0' }}>
+        <nav className="sidebar-nav">
           {visibleGroups.map((group) => (
             <div key={group.label} className="nav-group">
-              <div className="nav-group-label">{group.label}</div>
+              {!collapsed && <div className="nav-group-label">{group.label}</div>}
               {group.items.map((item) => (
                 <NavLink
                   key={item.path}
                   to={item.path}
                   className={({ isActive }) => `nav-link ${isActive ? 'active' : ''}`}
+                  title={collapsed ? item.label : ''}
                 >
                   <span className="nav-icon">{item.icon}</span>
-                  {item.label}
+                  {!collapsed && <span className="nav-text">{item.label}</span>}
                 </NavLink>
               ))}
             </div>
           ))}
         </nav>
 
-        <div className="sidebar-footer">
-          <div style={{ marginBottom: 12 }}>
-            <p style={{ fontSize: 12, color: 'var(--text-muted)', fontWeight: 500 }}>Signed in as</p>
-            <p style={{ fontSize: 14, fontWeight: 700, color: 'var(--text-primary)' }}>
-              {user?.email || 'User'}
-            </p>
-            <p style={{ fontSize: 11, color: 'var(--accent)', fontWeight: 600, textTransform: 'uppercase', letterSpacing: 1, marginTop: 2 }}>
-              {userRole}
-            </p>
+        <div className={`sidebar-footer ${collapsed ? 'hidden' : ''}`}>
+          <div className="footer-user">
+            <p className="footer-label">Signed in as</p>
+            <p className="footer-email">{user?.email || 'User'}</p>
+            <p className="footer-role">{userRole}</p>
           </div>
-          <button onClick={handleLogout} className="btn btn-ghost" style={{ width: '100%', fontSize: 13 }}>
+          <button onClick={handleLogout} className="btn btn-ghost">
             Sign Out
           </button>
         </div>
