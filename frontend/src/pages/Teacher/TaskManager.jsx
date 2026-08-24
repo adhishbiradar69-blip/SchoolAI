@@ -20,7 +20,7 @@ export default function TaskManager() {
   const [toast, setToast] = useState(null);
   const [expandedTask, setExpandedTask] = useState(null);
 
-  const [showModal, setShowModal] = useState(false);
+  const [showForm, setShowForm] = useState(false);
   const [taskTitle, setTaskTitle] = useState('');
   const [dueDate, setDueDate] = useState('');
   const [selectedSubject, setSelectedSubject] = useState('');
@@ -75,13 +75,19 @@ export default function TaskManager() {
       });
       setTaskTitle('');
       setDueDate('');
-      setShowModal(false);
+      setShowForm(false);
       showToast('Task created!', 'success');
       fetchTasks();
     } catch (err) {
       showToast('Failed to create task', 'error');
     }
     setCreating(false);
+  };
+
+  const cancelForm = () => {
+    setTaskTitle('');
+    setDueDate('');
+    setShowForm(false);
   };
 
   const toggleStatus = async (taskId, studentId, currentStatus) => {
@@ -125,7 +131,7 @@ export default function TaskManager() {
     );
   }
 
-  if (loading && tasks.length === 0) {
+  if (loading && tasks.length === 0 && !showForm) {
     return (
       <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', height: '60vh' }}>
         <p style={{ color: 'var(--text-secondary)' }}>Loading tasks...</p>
@@ -133,6 +139,90 @@ export default function TaskManager() {
     );
   }
 
+  /* ========== FULL-PAGE CREATE FORM ========== */
+  if (showForm) {
+    return (
+      <div className="animate-fade">
+        {toast && <Toast message={toast.message} type={toast.type} onClose={() => setToast(null)} />}
+
+        <div className="page-header">
+          <h2>Create New Task</h2>
+          <p>Set up an assignment for your class</p>
+        </div>
+
+        <div className="glass" style={{ padding: 0, maxWidth: 720 }}>
+          <div style={{ padding: '32px 36px', borderBottom: '1px solid var(--border)' }}>
+            <h3 style={{ fontSize: 15, fontWeight: 700, color: 'var(--text-secondary)', textTransform: 'uppercase', letterSpacing: 1 }}>Task Details</h3>
+          </div>
+
+          <form onSubmit={createTask} style={{ padding: '32px 36px' }}>
+            <div style={{ marginBottom: 24 }}>
+              <label style={{ display: 'block', fontSize: 12, fontWeight: 700, color: 'var(--text-secondary)', marginBottom: 8, textTransform: 'uppercase', letterSpacing: 0.8 }}>Task Name *</label>
+              <input
+                type="text"
+                placeholder="e.g., Chapter 5 Exercise, Science Project..."
+                value={taskTitle}
+                onChange={e => setTaskTitle(e.target.value)}
+                className="input"
+                style={{ fontSize: 16, padding: '14px 18px' }}
+                required
+              />
+            </div>
+
+            <div style={{ marginBottom: 24 }}>
+              <label style={{ display: 'block', fontSize: 12, fontWeight: 700, color: 'var(--text-secondary)', marginBottom: 8, textTransform: 'uppercase', letterSpacing: 0.8 }}>Subject *</label>
+              {subjects.length === 0 ? (
+                <p style={{ color: '#ef4444', fontSize: 14, fontWeight: 500 }}>
+                  No subjects found. Run <b>Seed Data</b> from Admin first.
+                </p>
+              ) : (
+                <div style={{ display: 'flex', gap: 10, flexWrap: 'wrap' }}>
+                  {subjects.map(sub => (
+                    <button
+                      key={sub.id}
+                      type="button"
+                      onClick={() => setSelectedSubject(String(sub.id))}
+                      style={{
+                        padding: '10px 20px', borderRadius: 24, border: 'none', fontSize: 14, fontWeight: 600, cursor: 'pointer',
+                        background: selectedSubject === String(sub.id) ? sub.color : 'rgba(255,255,255,0.6)',
+                        color: selectedSubject === String(sub.id) ? 'white' : '#64748b',
+                        transition: 'all 0.2s ease',
+                        boxShadow: selectedSubject === String(sub.id) ? '0 4px 12px rgba(0,0,0,0.15)' : '0 1px 3px rgba(0,0,0,0.05)',
+                        border: selectedSubject === String(sub.id) ? 'none' : '1.5px solid var(--border-strong)'
+                      }}
+                    >
+                      {sub.name}
+                    </button>
+                  ))}
+                </div>
+              )}
+            </div>
+
+            <div style={{ marginBottom: 32 }}>
+              <label style={{ display: 'block', fontSize: 12, fontWeight: 700, color: 'var(--text-secondary)', marginBottom: 8, textTransform: 'uppercase', letterSpacing: 0.8 }}>Due Date</label>
+              <input
+                type="date"
+                value={dueDate}
+                onChange={e => setDueDate(e.target.value)}
+                className="input"
+                style={{ width: 'auto', fontSize: 15, padding: '12px 18px' }}
+              />
+              <p style={{ fontSize: 12, color: 'var(--text-muted)', marginTop: 6 }}>Optional — leave blank if no deadline</p>
+            </div>
+
+            <div style={{ display: 'flex', gap: 12 }}>
+              <button type="button" onClick={cancelForm} className="btn btn-secondary" style={{ padding: '12px 32px' }}>Cancel</button>
+              <button type="submit" className="btn btn-primary" disabled={creating} style={{ padding: '12px 32px' }}>
+                {creating ? 'Creating...' : '✓ Create Task'}
+              </button>
+            </div>
+          </form>
+        </div>
+      </div>
+    );
+  }
+
+  /* ========== TASK LIST ========== */
   return (
     <div className="animate-fade">
       {toast && <Toast message={toast.message} type={toast.type} onClose={() => setToast(null)} />}
@@ -143,61 +233,10 @@ export default function TaskManager() {
       </div>
 
       <div style={{ marginBottom: 28 }}>
-        <button onClick={() => setShowModal(true)} className="btn btn-primary" style={{ padding: '12px 28px' }}>
+        <button onClick={() => setShowForm(true)} className="btn btn-primary" style={{ padding: '12px 28px' }}>
           + New Task
         </button>
       </div>
-
-      {showModal && (
-        <div style={{
-          position: 'fixed', inset: 0, background: 'rgba(248, 250, 252, 0.94)', backdropFilter: 'blur(12px)',
-          display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 9999
-        }} onClick={() => setShowModal(false)}>
-          <div className="glass animate-scale" style={{ padding: 32, width: '100%', maxWidth: 440, margin: 'auto' }} onClick={e => e.stopPropagation()}>
-            <h3 style={{ fontSize: 20, fontWeight: 700, marginBottom: 20 }}>Create New Task</h3>
-            <form onSubmit={createTask}>
-              <div style={{ marginBottom: 16 }}>
-                <label style={{ display: 'block', fontSize: 13, fontWeight: 600, color: 'var(--text-secondary)', marginBottom: 6, textTransform: 'uppercase', letterSpacing: 0.5 }}>Task Name</label>
-                <input type="text" placeholder="e.g., Chapter 5 Exercise" value={taskTitle} onChange={e => setTaskTitle(e.target.value)} className="input" required />
-              </div>
-              <div style={{ marginBottom: 16 }}>
-                <label style={{ display: 'block', fontSize: 13, fontWeight: 600, color: 'var(--text-secondary)', marginBottom: 6, textTransform: 'uppercase', letterSpacing: 0.5 }}>Subject</label>
-                {subjects.length === 0 ? (
-                  <p style={{ color: '#ef4444', fontSize: 13, fontWeight: 500 }}>
-                    No subjects found. Run <b>Seed Data</b> from Admin first.
-                  </p>
-                ) : (
-                  <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap' }}>
-                    {subjects.map(sub => (
-                      <button
-                        key={sub.id}
-                        type="button"
-                        onClick={() => setSelectedSubject(String(sub.id))}
-                        style={{
-                          padding: '8px 16px', borderRadius: 20, border: 'none', fontSize: 13, fontWeight: 600, cursor: 'pointer',
-                          background: selectedSubject === String(sub.id) ? sub.color : 'rgba(255,255,255,0.45)',
-                          color: selectedSubject === String(sub.id) ? 'white' : '#64748b',
-                          transition: 'all 0.2s ease'
-                        }}
-                      >
-                        {sub.name}
-                      </button>
-                    ))}
-                  </div>
-                )}
-              </div>
-              <div style={{ marginBottom: 24 }}>
-                <label style={{ display: 'block', fontSize: 13, fontWeight: 600, color: 'var(--text-secondary)', marginBottom: 6, textTransform: 'uppercase', letterSpacing: 0.5 }}>Due Date</label>
-                <input type="date" value={dueDate} onChange={e => setDueDate(e.target.value)} className="input" style={{ width: 'auto' }} />
-              </div>
-              <div style={{ display: 'flex', gap: 10 }}>
-                <button type="button" onClick={() => setShowModal(false)} className="btn btn-secondary" style={{ flex: 1 }}>Cancel</button>
-                <button type="submit" className="btn btn-primary" disabled={creating} style={{ flex: 1 }}>{creating ? 'Creating...' : 'Create'}</button>
-              </div>
-            </form>
-          </div>
-        </div>
-      )}
 
       {tasks.length === 0 && (
         <div className="glass" style={{ textAlign: 'center', padding: 60 }}>
