@@ -866,3 +866,236 @@ tr:last-child td {
   .sidebar { transform: translateX(-100%); }
   .main-area { margin-left: 0; padding: 20px; max-width: 100vw; }
 }
+/* ===== ATTENDANCE PAGE ANIMATIONS ===== */
+
+/* ─── Status Pop (old school scale bounce) ─── */
+@keyframes statusPop {
+  0%   { transform: scale(1); }
+  35%  { transform: scale(1.18); }
+  70%  { transform: scale(0.94); }
+  100% { transform: scale(1); }
+}
+
+.status-pop {
+  animation: statusPop 0.32s cubic-bezier(0.34, 1.8, 0.64, 1);
+}
+
+/* ─── Stat Number Bump ─── */
+@keyframes statBump {
+  0%   { transform: scale(1); }
+  40%  { transform: scale(1.15); }
+  100% { transform: scale(1); }
+}
+
+.stat-number {
+  display: inline-block;
+}
+
+.stat-number-bump {
+  animation: statBump 0.3s cubic-bezier(0.34, 1.8, 0.64, 1);
+}
+
+/* ─── Row Entrance (staggered via nth-child, plays once on mount) ─── */
+@keyframes rowEnter {
+  from { opacity: 0; transform: translateX(-14px); }
+  to   { opacity: 1; transform: translateX(0); }
+}
+
+.attendance-row {
+  opacity: 0;
+  animation: rowEnter 0.4s cubic-bezier(0.22, 1, 0.36, 1) forwards;
+  transition: background 0.25s ease, transform 0.25s var(--ease-butter);
+}
+
+.attendance-row:hover {
+  transform: translateX(3px);
+}
+
+.attendance-row:hover .attendance-row-number {
+  color: var(--accent);
+  transform: scale(1.12);
+}
+
+.attendance-row-number {
+  display: inline-block;
+  transition: all 0.2s var(--ease-spring);
+}
+
+/* Stagger delays (0–30 rows) */
+.attendance-row:nth-child(1)  { animation-delay: 0.00s; }
+.attendance-row:nth-child(2)  { animation-delay: 0.03s; }
+.attendance-row:nth-child(3)  { animation-delay: 0.06s; }
+.attendance-row:nth-child(4)  { animation-delay: 0.09s; }
+.attendance-row:nth-child(5)  { animation-delay: 0.12s; }
+.attendance-row:nth-child(6)  { animation-delay: 0.15s; }
+.attendance-row:nth-child(7)  { animation-delay: 0.18s; }
+.attendance-row:nth-child(8)  { animation-delay: 0.21s; }
+.attendance-row:nth-child(9)  { animation-delay: 0.24s; }
+.attendance-row:nth-child(10) { animation-delay: 0.27s; }
+.attendance-row:nth-child(11) { animation-delay: 0.30s; }
+.attendance-row:nth-child(12) { animation-delay: 0.33s; }
+.attendance-row:nth-child(13) { animation-delay: 0.36s; }
+.attendance-row:nth-child(14) { animation-delay: 0.39s; }
+.attendance-row:nth-child(15) { animation-delay: 0.42s; }
+.attendance-row:nth-child(16) { animation-delay: 0.45s; }
+.attendance-row:nth-child(17) { animation-delay: 0.48s; }
+.attendance-row:nth-child(18) { animation-delay: 0.51s; }
+.attendance-row:nth-child(19) { animation-delay: 0.54s; }
+.attendance-row:nth-child(20) { animation-delay: 0.57s; }
+.attendance-row:nth-child(21) { animation-delay: 0.60s; }
+.attendance-row:nth-child(22) { animation-delay: 0.63s; }
+.attendance-row:nth-child(23) { animation-delay: 0.66s; }
+.attendance-row:nth-child(24) { animation-delay: 0.69s; }
+.attendance-row:nth-child(25) { animation-delay: 0.72s; }
+.attendance-row:nth-child(26) { animation-delay: 0.75s; }
+.attendance-row:nth-child(27) { animation-delay: 0.78s; }
+.attendance-row:nth-child(28) { animation-delay: 0.81s; }
+.attendance-row:nth-child(29) { animation-delay: 0.84s; }
+.attendance-row:nth-child(30) { animation-delay: 0.87s; }
+
+/* ─── Row Flash (when status clicked) ─── */
+@keyframes rowFlash {
+  0%   { background: rgba(79, 125, 243, 0.08); }
+  100% { background: transparent; }
+}
+
+.row-flash {
+  animation: rowFlash 0.5s ease forwards;
+}
+
+/* ─── Attendance Bar ─── */
+.attendance-bar-track {
+  height: 6px;
+  background: #e8e6e2;
+  border-radius: 3px;
+  overflow: hidden;
+  position: relative;
+}
+
+.attendance-bar-fill {
+  height: 100%;
+  border-radius: 3px;
+  transition: width 0.6s cubic-bezier(0.22, 1, 0.36, 1);
+  position: relative;
+}
+
+.attendance-bar-fill::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(90deg, transparent, rgba(255,255,255,0.4), transparent);
+  background-size: 200% 100%;
+  animation: shimmer-wash 2.5s ease-in-out infinite;
+}
+
+@keyframes shimmer-wash {
+  0%   { background-position: -200% center; }
+  100% { background-position: 200% center; }
+}
+
+/* ─── Status Pill ─── */
+.pill-attendance {
+  min-width: 90px;
+  transition: transform 0.2s var(--ease-spring), box-shadow 0.2s ease;
+}
+
+.pill-attendance:active {
+  transform: scale(0.96);
+}
+
+/* ─── Summary Chips ─── */
+@keyframes chipEnter {
+  0%   { opacity: 0; transform: scale(0.7) translateY(4px); }
+  60%  { transform: scale(1.04) translateY(0); }
+  100% { opacity: 1; transform: scale(1) translateY(0); }
+}
+
+.summary-chip {
+  opacity: 0;
+  animation: chipEnter 0.4s cubic-bezier(0.34, 1.8, 0.64, 1) forwards;
+  cursor: default;
+  transition: transform 0.2s var(--ease-spring), box-shadow 0.2s ease;
+}
+
+.summary-chip:hover {
+  transform: translateY(-2px) scale(1.03);
+  box-shadow: 0 4px 12px rgba(0,0,0,0.08);
+}
+
+/* ─── Summary Section Enter ─── */
+@keyframes summaryEnter {
+  from { opacity: 0; transform: translateY(12px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+.summary-section-enter {
+  animation: summaryEnter 0.4s cubic-bezier(0.22, 1, 0.36, 1) both;
+}
+
+/* ─── Spin Icon ─── */
+.spin-icon {
+  display: inline-block;
+  animation: spin 0.8s linear infinite;
+}
+
+/* ─── Skeleton Loader ─── */
+@keyframes skeleton-shimmer {
+  0%   { background-position: -200% 0; }
+  100% { background-position: 200% 0; }
+}
+
+.skeleton-row {
+  background: linear-gradient(90deg, #f0eeea 25%, #f8f6f3 50%, #f0eeea 75%);
+  background-size: 200% 100%;
+  animation: skeleton-shimmer 1.5s ease-in-out infinite;
+}
+
+.skeleton-block {
+  background: #e2e0dc;
+  border-radius: 4px;
+}
+
+/* ─── Controls Bar ─── */
+.controls-bar {
+  transition: box-shadow 0.3s ease;
+}
+
+.controls-bar:hover {
+  box-shadow: 0 4px 20px rgba(26, 31, 54, 0.06);
+}
+
+/* ─── Date Picker ─── */
+.date-picker-wrap {
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.date-picker-wrap input[type="date"] {
+  cursor: pointer;
+  transition: all 0.3s var(--ease-butter);
+}
+
+.date-picker-wrap input[type="date"]:hover {
+  border-color: var(--accent-light);
+  box-shadow: 0 2px 12px rgba(79, 125, 243, 0.1);
+}
+
+/* ─── Mark All Buttons ─── */
+.mark-all-btn {
+  position: relative;
+  overflow: hidden;
+}
+
+.mark-all-btn::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(135deg, rgba(79,125,243,0.05) 0%, transparent 100%);
+  opacity: 0;
+  transition: opacity 0.3s ease;
+}
+
+.mark-all-btn:hover::before {
+  opacity: 1;
+}
